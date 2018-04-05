@@ -6,10 +6,13 @@ import (
 	consulapi "github.com/hashicorp/consul/api"
 )
 
-func newConsulClient(consulAPI, consulToken string) (*consulapi.Client, error) {
+func newConsulClient(consulAPI, consulToken string, consulScheme string, consulCAPath string) (*consulapi.Client, error) {
 	config := consulapi.DefaultConfig()
 	config.Address = consulAPI
 	config.Token = consulToken
+	config.Scheme = consulScheme
+	config.TLSConfig.CAPath = consulCAPath
+	config.TLSConfig.Address = consulAPI
 
 	consulClient, err := consulapi.NewClient(config)
 	if err != nil {

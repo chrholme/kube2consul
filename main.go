@@ -41,6 +41,8 @@ type kube2consul struct {
 type cliOpts struct {
 	kubeAPI      string
 	consulAPI    string
+	consulScheme string
+	consulCAPath string
 	consulToken  string
 	resyncPeriod int
 	version      bool
@@ -56,6 +58,8 @@ func init() {
 	flag.StringVar(&opts.kubeAPI, "kubernetes-api", "", "Overrides apiserver address when used in cluster")
 	flag.StringVar(&opts.consulAPI, "consul-api", "127.0.0.1:8500", "Consul API URL")
 	flag.StringVar(&opts.consulToken, "consul-token", "", "Consul API token")
+	flag.StringVar(&opts.consulScheme, "consul-scheme","http","Consul API scheme")
+	flag.StringVar(&opts.consulCAPath, "consul-capath", "","Path to CA cert for use with Consul")
 	flag.StringVar(&opts.kubeConfig, "kubeconfig", "", "Absolute path to the kubeconfig file")
 	flag.BoolVar(&opts.lock, "lock", false, "Acquires a lock with consul to ensure that only one instance of kube2consul is running")
 	flag.StringVar(&opts.lockKey, "lock-key", "locks/kube2consul/.lock", "Key used for locking")
@@ -101,7 +105,7 @@ func (k2c *kube2consul) RemoveDNSGarbage() {
 }
 
 func consulCheck() error {
-	_, err := newConsulClient(opts.consulAPI, opts.consulToken)
+	_, err := newConsulClient(opts.consulAPI, opts.consulToken, opts.consulScheme, opts.consulCAPath)
 	if err != nil {
 		return err
 	}
@@ -130,7 +134,7 @@ func main() {
 	}
 
 	// create consul client
-	consulClient, err := newConsulClient(opts.consulAPI, opts.consulToken)
+	consulClient, err := newConsulClient(opts.consulAPI, opts.consulToken, opts.consulScheme, opts.consulCAPath)
 	if err != nil {
 		glog.Fatalf("Failed to create a consul client: %v", err)
 	}
